@@ -1,0 +1,109 @@
+---
+title: "Final_project"
+author: "Julie Oestgaard Dahl"
+date: "2026-08-20"
+output: html_document
+---
+
+##Loading libraries & First a visualization of population in Greenland 1840-2025
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+greenland<-read_csv2("greenland_final.csv")
+
+
+greenland <- read_delim("greenland_final.csv", delim = ";",
+                 locale = locale(decimal_mark = ",", grouping_mark = "."))
+
+head(greenland)
+
+#First a visualization of population in Greenland 1840-2025
+ggplot(greenland, aes(x = year, y = population)) +
+  geom_line(color = "red", linewidth = 1.0) +
+  geom_point(color = "black", size = 1.5) +
+  labs(
+    title = "Population of Greenland, 1840-2025",
+    x = "Year",
+    y = "Population"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12)
+  )
+```
+
+##Visualization with data gap-line with a data gap between 1946-1960
+
+```{r echo=TRUE}
+#Visualization with data gap-line with a data gap between 1946-1960
+ggplot(greenland, aes(x = year, y = population)) +
+  geom_vline(xintercept = 1953, linetype = "dashed", color = "grey70") +
+  annotate("text", x = 1953, y = max(greenland$population, na.rm = TRUE),
+           label = "Data gap  1946-60 ", angle = 0, vjust = 2.5, size = 4, color = "grey50") +
+  geom_line(color = "red", linewidth = 1.0) +
+  geom_point(color = "black", size = 1.5) +
+  labs(
+    title = "Population of Greenland, 1840-2025",
+    x = "Year",
+    y = "Population"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title.x = element_text(size = 14),
+    axis.title.y = element_text(size = 14),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12)
+  ) 
+
+  scale_y_log10()
+
+```
+
+##Visualization of annual growth in percent 1961-2025
+
+```{r echo=TRUE}
+#Visualization of annual growth in percent 1961-2025
+
+library(tidyverse)
+library(scales)
+library(plotly)
+
+greenland_growth <- greenland %>%
+  filter(year >= 1961) %>%
+  arrange(year) %>%
+  mutate(growth_pct = (log(population) - log(lag(population))) * 100)
+
+p <- ggplot(greenland_growth, aes(x = year, y = growth_pct)) +
+  geom_hline(yintercept = 0, color = "grey80", linewidth = 0.4) +
+  geom_hline(yintercept = -1, color = "grey80", linewidth = 0.4, linetype = "dashed") +
+  geom_hline(yintercept = -0.5, color = "grey80", linewidth = 0.4, linetype = "dashed") +
+  geom_line(color = "red", linewidth = 1) +
+  labs(
+    title = "Population growth (annual %), Greenland 1961-2025",
+    subtitle = "Greenland, 1961-2025",
+    x = "Year",
+    y = "Annual % growth"
+  ) +
+  scale_y_continuous(labels = scales::label_number(suffix = "%"), breaks = scales::breaks_width(0.5)) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    plot.title = element_text(size = 16, face = "bold")
+  )
+
+ggplotly(p)
+
+```
+
